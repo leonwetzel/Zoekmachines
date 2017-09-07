@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 '''
 Week 1
 Search Engines / Zoekmachines
@@ -23,7 +25,11 @@ for line in fileinput.input():
     text = split.group(5)
     words = split.group(7)
 
+    # FOR TEST PURPOSES:
+    # print(user + " -> " + text + " -> " + words)
+
+    dictionary.update({key: (user, text, words)})
 
 # Saves dictionary as pickle
-with open('docs.pickle', 'wb') as f:
+with open('tweets.pickle', 'wb') as f:
     pickle.dump(dictionary, f)
