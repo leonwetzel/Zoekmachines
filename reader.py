@@ -14,5 +14,4 @@ import pickle
 # Read from pickle
 tweets = pickle.load(open('tweets.pickle', 'rb'))\
 
-for line in tweets:
-    print(line)
+print(tweets)
