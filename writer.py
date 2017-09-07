@@ -19,16 +19,18 @@ dictionary = {}
 # Use regular expressions to cut every line in usable pieces and
 # insert those pieces - which form a tuple - into the dictionary
 for line in fileinput.input():
-    split = re.search('^(\d*)(\t{1})(\S+)(\t{1})(.+)(\t{1})(.+)$', line)
-    key = split.group(1)
-    user = split.group(3)
-    text = split.group(5)
-    words = split.group(7)
+    try:
+        split = re.search('^(\d*)(\t{1})(\S+)(\t{1})(.+)(\t{1})(.+)$', line)
 
-    # FOR TEST PURPOSES:
-    # print(user + " -> " + text + " -> " + words)
+        # FOR TEST PURPOSES:
+        # print(user + " -> " + text + " -> " + words)
 
-    dictionary.update({key: (user, text, words)})
+        dictionary.update({split.group(1): (split.group(3), split.group(5), split.group(7))})
+
+    except Exception as e:
+        # Just in case ;)
+        print(e)
+
 
 # Saves dictionary as pickle
 with open('tweets.pickle', 'wb') as f:
