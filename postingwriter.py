@@ -16,6 +16,7 @@ import string
 
 # Initiate dictionaries and set
 dictionary = {}
+new = set()
 postings = set()
 words = {}
 
@@ -26,19 +27,18 @@ for line in fileinput.input():
     line = line.lower()
     try:
         split = re.search('^(\d*)(\t{1})(\S+)(\t{1})(.+)(\t{1})(.+)$', line)
-        words = split.group(7)
-        words = words.replace(" ", "\n")
-        words = words.translate(None, string.punctuation)
+        new = split.group(7)
+        new = new.replace(" ", "\n")
+        new = new.translate(None, string.punctuation)
 
-        postings.update(words)
+        print(new)
+        postings.update(new)
 
         dictionary.update({split.group(1): (split.group(3), split.group(5), split.group(7))})
 
     except Exception as e:
         # Just in case ;)
         print(e)
-
-print(postings)
 
 # Saves dictionary as pickle
 with open('tweets.pickle', 'wb') as f:
