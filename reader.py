@@ -12,7 +12,7 @@ l.f.a.wetzel@student.rug.nl
 import pickle
 
 # Read from pickle
-tweets = pickle.load(open('tweets.pickle', 'rb'))\
+tweets = pickle.load(open('tweets.pickle', 'rb'))
 
 # Display the words for every tweet in the pickle
 for key in tweets:
