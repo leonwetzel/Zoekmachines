@@ -14,6 +14,6 @@ import pickle
 # Read from pickle
 tweets = pickle.load(open('tweets.pickle', 'rb'))
 
-# Display the words for every tweet in the pickle
+# Display the words [2] for every tweet in the pickle
 for key in tweets:
     print(tweets[key][2])

@@ -14,9 +14,10 @@ import fileinput
 import re
 import string
 
+import sys
+
 dictionary = {}
 postings = {}
-
 
 # Use regular expressions to cut every line in usable pieces and
 # only grab the words.
@@ -72,9 +73,9 @@ for line in fileinput.input():
 # Saves posting list dictionary as pickle
 with open('postinglist.pickle', 'wb') as p:
     pickle.dump(postings, p)
-    print("Posting list successfully dumped to pickle!")
+    print("Posting list successfully dumped to pickle!", file=sys.stderr)
 
 # Saves tweets dictionary as pickle
 with open('tweets.pickle', 'wb') as f:
     pickle.dump(dictionary, f)
-    print("Tweets successfully dumped to pickle!")
+    print("Tweets successfully dumped to pickle!", file=sys.stderr)
