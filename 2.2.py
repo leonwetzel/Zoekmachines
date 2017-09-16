@@ -37,14 +37,11 @@ def main():
             # if word is already index, add current position to positions
             if token in positions:
                 cur_pos = positions[token]
-                cur_pos.add(index)
+                cur_pos.append(index)
                 positions.update({token: cur_pos})
-                # print('{}\t{}'.format(token, positions[token]))
             else:
-                item = {token: {index}}
+                item = {token: [index]}
                 positions.update(item)
-
-                # print('{}\t{}'.format(token, positions[token]))
             # increment index
             index += 1
 
