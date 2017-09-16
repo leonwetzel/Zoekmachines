@@ -22,7 +22,7 @@ for key in sys.stdin:
     [firstKey, secondKey] = key.rstrip().split()
 
     # Check if keys both are in the big posting list.
-    if firstKey in postings & secondKey in postings:
+    if firstKey in postings and secondKey in postings:
         # Find the identifier of the tweet in which the two keys match.
         # If found, print the tweet and repeat the process until there
         # are no more matches to be found.

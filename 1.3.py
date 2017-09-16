@@ -10,7 +10,6 @@ l.f.a.wetzel@student.rug.nl
 '''
 
 import pickle
-import fileinput
 import re
 import string
 
@@ -21,7 +20,7 @@ postings = {}
 
 # Use regular expressions to cut every line in usable pieces and
 # only grab the words.
-for line in fileinput.input():
+for line in sys.stdin:
     # APPLE and apple should be the same, for instance ;)
     line = line.lower()
     try:
@@ -73,9 +72,11 @@ for line in fileinput.input():
 # Saves posting list dictionary as pickle
 with open('postinglist.pickle', 'wb') as p:
     pickle.dump(postings, p)
-    print("Posting list successfully dumped to pickle!", file=sys.stderr)
+    # print("Posting list successfully dumped to pickle!", file=sys.stderr)
+    sys.stderr.write("Posting list successfully dumped to pickle!\n")
 
 # Saves tweets dictionary as pickle
 with open('tweets.pickle', 'wb') as f:
     pickle.dump(dictionary, f)
-    print("Tweets successfully dumped to pickle!", file=sys.stderr)
+    # print("Tweets successfully dumped to pickle!", file=sys.stderr)
+    sys.stderr.write("Tweets successfully dumped to pickle!\n")

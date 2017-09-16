@@ -10,15 +10,16 @@ l.f.a.wetzel@student.rug.nl
 '''
 
 import pickle
-import fileinput
 import re
+import sys
 
 # Initiate a dictionary
+
 dictionary = {}
 
 # Use regular expressions to cut every line in usable pieces and
 # insert those pieces - which form a tuple - into the dictionary
-for line in fileinput.input():
+for line in sys.stdin:
     try:
         split = re.search('^(\d*)(\t{1})(\S+)(\t{1})(.+)(\t{1})(.+)$', line)
 
