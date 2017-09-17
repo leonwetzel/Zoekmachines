@@ -42,7 +42,7 @@ def bigram(l1, l2):
         # naive implementation
         for p in l1:
             for j in l2:
-                if j == p + 1:
+                if p == j + 1:
                     sol = True
         print(sol)
 
