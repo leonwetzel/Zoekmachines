@@ -24,6 +24,9 @@ def main():
     :return: 
     
     DB structure: term | tweetID | ordered position list for term in tweet
+    
+    In dictionary:
+    {(term, tweetID) : ordered position list for term in tweet}
     """
 
     # at the end, the dictionary will be dumped to a pickle
@@ -48,21 +51,19 @@ def main():
                 cur_pos.append(index)
                 # third, we insert the temp list into the positions
                 positions.update({token: cur_pos})
-                # fourth, we create a tuple which contains the tweet ID and the positions
-                tup = (split.group(1), positions[token])
+
+                db.update({(token, split.group(1)): cur_pos})
             else:
                 # add token and index to positions
                 item = {token: [index]}
                 positions.update(item)
 
-                # create tuple which contains tweet ID and current position
-                tup = (split.group(1), [index])
-
-            # fifth, we update the db dictionary
-            db.update({token: tup})
+                db.update({(token, split.group(1)): [index]})
 
             # increment index
             index += 1
+
+    # print(db)
 
     # build database
     with open('db.pickle', 'wb') as f:

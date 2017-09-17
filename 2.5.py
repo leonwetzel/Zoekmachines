@@ -11,9 +11,9 @@ l.f.a.wetzel@student.rug.nl
 import sys
 import pickle
 
+# load pickles
 db = pickle.load(open('db.pickle', 'rb'))
-tweets = pickle.load(open('tweets.pickle', 'rb'))
-postings = pickle.load(open('postinglist.pickle', 'rb'))
+tweets = pickle.load(open('tweets.pickle', 'rb'), encoding="utf-8")
 
 
 def main():
@@ -24,28 +24,30 @@ def main():
     :return: 
     
     DB structure: term | tweetID | ordered position list for term in tweet
-    dict(term, tup(tweet ID, [positions]))
+    dict(tup(term, tweet ID) : [positions])
+    
+    So, dict key = (term, tweet ID)
     """
 
     for line in sys.stdin:
         # retrieve the terms from stdin
-        # echo "de man"
+        # EXAMPLE: echo "Ik zit"
         [q1, q2] = line.rstrip().split()
 
-        # bind terms
-        term1 = db[q1]
-        term2 = db[q2]
+        for key in tweets:
+            if (q1, key) in db and (q2, key) in db:
+                pos1 = db[(q1, key)]
+                pos2 = db[(q2, key)]
 
+                # print("POS1 -> " + str(pos1))
+                # print("POS2 -> " + str(pos2))
 
-
-        # check if keys both are in the big posting list.
-        # this way, we limit the search to tweets which at least contain both terms
-        if q1 in postings and q2 in postings:
-            for identifier in postings[q1] & postings[q2]:
-                # retrieve db record
-
-                print(identifier)
-
+                for i in pos1:
+                    # print("i -> " + str(i))
+                    for j in pos2:
+                        # print("j -> " + str(j))
+                        if j == i + 1:
+                            print(tweets[key][2])
 
 if __name__ == "__main__":
     main()
