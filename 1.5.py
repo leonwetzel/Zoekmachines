@@ -13,8 +13,8 @@ import pickle
 import sys
 
 # Load pickles
-tweets = pickle.load(open('tweets.pickle', 'rb'))
-postings = pickle.load(open('postinglist.pickle', 'rb'))
+tweets = pickle.load(open('tweets.pickle', 'rb'), encoding="utf-8")
+postings = pickle.load(open('postinglist.pickle', 'rb'), encoding="utf-8")
 
 for key in sys.stdin:
     # Get two keys/words from stdin.
