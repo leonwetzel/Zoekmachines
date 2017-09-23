@@ -14,13 +14,14 @@ distance = int
 
 def main():
     """
-    Standard Levenshtein. Implement een Python function which returns the
-    Levenshtein distance (figure 3.5 in the book) for two given words.
-    Add a main function to the program, so that the program reads lines
-    from standard input. Each line is supposed to contain two words,
-    separated by a TAB. Those two words with the Levenshtein distance are
-    printed to standard output, again separated by TAB. Insertion,
-    deletion and substitution all have a cost of 1.
+    Variant of Levenshtein. In order to make the exercise a bit more interesting,
+    you will now implement a variant of Levenshtein distance. In this variant,
+    insertion and deletion of a vowel only costs 0.5. Insertion and deletion of
+    all other characters costs 1. Substitution has a cost of 1 as well, except if
+    a vowel is substituted by a vowel which has a cost of 0.5. For the purpose of
+    this exercise, vowels simply are characters a, e, i, o and u. Here are some
+    examples: file lev_vowel.in. The following pipe should produce output that is
+    identical to lev_vowel.out. 
     :return: 
     """
 
@@ -36,12 +37,13 @@ def main():
             sys.exit()
 
         # print both words and Levenshtein distance
-        print("{}\t{}\t{}".format(w1, w2, lev(w1, w2)))
+        print("{}\t{}\t{}".format(w1, w2, custom_levenshtein(w1, w2)))
 
 
-def lev(w1, w2):
+def custom_levenshtein(w1, w2):
     """
-    A dynamic programming solution to find the Levenshtein distance of two words.
+    A dynamic programming solution to find the alternative Levenshtein distance
+    for two words.
     :param w1: first word
     :param w2: second word
     :return: Levenshtein distance
@@ -50,7 +52,7 @@ def lev(w1, w2):
     if len(w1) < len(w2):
         # check if length of word1 is smaller than word2.
         # if so, call function and switch parameters
-        return lev(w2, w1)
+        return custom_levenshtein(w2, w1)
     elif len(w1) == 0:
         # if the length of word1 equals 0, that means that
         # the Lev' distance is the length of word2
