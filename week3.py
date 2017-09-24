@@ -9,7 +9,7 @@ University of Groningen / Rijksuniversiteit Groningen
 l.f.a.wetzel@student.rug.nl
 """
 import sys
-distance = int
+vowels = ['a', 'i', 'u', 'e', 'o']
 
 
 def main():
@@ -42,13 +42,14 @@ def main():
 
 def custom_levenshtein(w1, w2):
     """
-    A dynamic programming solution to find the alternative Levenshtein distance
+    A dynamic programming solution to find the custom Levenshtein distance
     for two words.
     :param w1: first word
     :param w2: second word
-    :return: Levenshtein distance
+    :return: custom Levenshtein distance
     """
 
+    # base checks
     if len(w1) < len(w2):
         # check if length of word1 is smaller than word2.
         # if so, call function and switch parameters
@@ -65,44 +66,59 @@ def custom_levenshtein(w1, w2):
         # check if words are simply the same
         return 0
 
-    # thanks to the check above, we can assume that w2 is the longest word
-    # we use this information to determine the range of 'previous'
+    # thanks to the check above, we can assume that w1 is the longest word
+    # we use this information to determine the range of 'previous' and the
+    # matrix in general
     previous = range(len(w2) + 1)
 
     # DEBUG
-    # print(previous)
+    # print("PREV -> \t" + str(previous))
 
     # iterate over the characters of the first word
     for a, char1 in enumerate(w1):
         # DEBUG
-        # print("i -> " + str(a))
-        # print("char1 -> " + str(char1))
+        print("\na -> \t" + str(a))
+        print("\tchar1 -> \t" + str(char1))
 
-        current = [a + 1]
+        # the matrix-in-development
+        # see bloed/bode example from sheets w3
+        # matrix = [a + 1]
+        matrix = [a]
 
         # iterate over the characters of the second word
         for b, char2 in enumerate(w2):
             # DEBUG
-            # print("j -> " + str(b))
-            # print("\tchar2 -> " + str(char2))
+            print("b -> \t" + str(b))
+            print("\tchar2 -> \t" + str(char2))
 
-            inserts = previous[b + 1] + 1
-            deletions = current[b] + 1
-            subs = previous[b] + (char1 != char2)
+            if (char1 in vowels and char2 in vowels) and a == b:
+                inserts = previous[b + 1] + 0.5
+                deletions = matrix[b] + 0.5
+                subs = previous[b] + (char1 != char2)/2
+            elif char1 in vowels and (a > b or a < b):
+                inserts = previous[b + 1] + 0.5
+                deletions = matrix[b] + 0.5
+                subs = previous[b] + (char1 != char2)/2
+            else:
+                inserts = previous[b + 1] + 1
+                deletions = matrix[b] + 1
+                subs = previous[b] + (char1 != char2)
 
             # DEBUG
-            # print(str(char1 != char2))
-            # print("INSERTS -> " + str(inserts))
-            # print("DELS -> " + str(deletions))
-            # print("SUBS -> " + str(subs))
+            print("char1 != char2 -> \t" + str(char1 != char2))
+            print("INSERTS -> \t" + str(inserts))
+            print("DELS -> \t" + str(deletions))
+            print("SUBS -> \t" + str(subs))
 
-            current.append(min(inserts, deletions, subs))
+            # add the minimum to the matrix
+            matrix.append(min(inserts, deletions, subs))
 
             # DEBUG
-            # print("CURRENT -> " + str(current))
-        previous = current
+            print("CURRENT -> \t" + str(matrix))
+        previous = matrix
 
-    return previous[-1]
+    # print(str(previous[-1]))
+    return float(previous[-1])
 
 if __name__ == "__main__":
     main()
