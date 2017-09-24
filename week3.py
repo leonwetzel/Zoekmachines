@@ -77,8 +77,8 @@ def custom_levenshtein(w1, w2):
     # iterate over the characters of the first word
     for a, char1 in enumerate(w1):
         # DEBUG
-        print("\na -> \t" + str(a))
-        print("\tchar1 -> \t" + str(char1))
+        # print("\na -> \t" + str(a))
+        # print("\tchar1 -> \t" + str(char1))
 
         # the matrix-in-development
         # see bloed/bode example from sheets w3
@@ -88,8 +88,8 @@ def custom_levenshtein(w1, w2):
         # iterate over the characters of the second word
         for b, char2 in enumerate(w2):
             # DEBUG
-            print("b -> \t" + str(b))
-            print("\tchar2 -> \t" + str(char2))
+            # print("b -> \t" + str(b))
+            # print("\tchar2 -> \t" + str(char2))
 
             if (char1 in vowels and char2 in vowels) and a == b:
                 inserts = previous[b + 1] + 0.5
@@ -105,16 +105,16 @@ def custom_levenshtein(w1, w2):
                 subs = previous[b] + (char1 != char2)
 
             # DEBUG
-            print("char1 != char2 -> \t" + str(char1 != char2))
-            print("INSERTS -> \t" + str(inserts))
-            print("DELS -> \t" + str(deletions))
-            print("SUBS -> \t" + str(subs))
+            # print("char1 != char2 -> \t" + str(char1 != char2))
+            # print("INSERTS -> \t" + str(inserts))
+            # print("DELS -> \t" + str(deletions))
+            # print("SUBS -> \t" + str(subs))
 
             # add the minimum to the matrix
             matrix.append(min(inserts, deletions, subs))
 
             # DEBUG
-            print("CURRENT -> \t" + str(matrix))
+            # print("CURRENT -> \t" + str(matrix))
         previous = matrix
 
     # print(str(previous[-1]))
