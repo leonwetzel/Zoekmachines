@@ -26,8 +26,6 @@ def main():
     """
 
     for line in sys.stdin:
-        # reset distance to 0
-        distance = 0
         # separate input and assign words to w1 and w2
         try:
             [w1, w2] = line.rstrip().split('\t')
@@ -66,7 +64,6 @@ def custom_levenshtein(w1, w2):
         # check if words are simply the same
         return 0
 
-    # thanks to the check above, we can assume that w1 is the longest word
     # we use this information to determine the range of 'previous' and the
     # matrix in general
     previous = range(len(w2) + 1)
@@ -91,6 +88,9 @@ def custom_levenshtein(w1, w2):
             # print("b -> \t" + str(b))
             # print("\tchar2 -> \t" + str(char2))
 
+            # in order to improve readability of the code,
+            # I decided to split if-statements and 'copy'
+            # the code across several statements.
             if (char1 in vowels and char2 in vowels) and a == b:
                 inserts = previous[b + 1] + 0.5
                 deletions = matrix[b] + 0.5
