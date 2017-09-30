@@ -39,35 +39,6 @@ def main():
                 pos1 = db[(q1, key)]
                 pos2 = db[(q2, key)]
 
-                # FIXME:
-                # below is 'better' intersection algorithm
-                # it slightly works, but I cannot find the proper solution...
-                # it1 = iter(pos1)
-                # it2 = iter(pos2)
-                #
-                # n1 = next(it1)
-                # n2 = next(it2)
-                # while True:
-                #     try:
-                #         if n2 == n1 + 1:
-                #             print(tweets[key][2])
-                #             n1 = next(it1)
-                #             n2 = next(it2)
-                #         else:
-                #             if n1 < n2:
-                #                 n1 = next(it1)
-                #                 n2 = next(it2)
-                #             else:
-                #                 n1 = next(it1)
-                #                 n2 = next(it2)
-                #     except StopIteration:
-                #         return 0
-
-                # print("POS1 -> " + str(pos1))
-                # print("POS2 -> " + str(pos2))
-
-                # below is a naive implementation
-                # we need to find a better intersection algorithm...
                 for i in pos1:
                     # print("i -> " + str(i))
                     for j in pos2:

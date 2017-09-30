@@ -21,6 +21,7 @@ def main():
     separated by a TAB. Those two words with the Levenshtein distance are
     printed to standard output, again separated by TAB. Insertion,
     deletion and substitution all have a cost of 1.
+    
     :return: 
     """
 

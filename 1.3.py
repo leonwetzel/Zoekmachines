@@ -32,7 +32,7 @@ for line in sys.stdin:
         # print("\n\nID -> " + identifier)
 
         # Generate tokens and place them in set 'new'
-        new = split.group(7).translate(None, string.punctuation).split()
+        new = split.group(7).split() #.translate(None, string.punctuation).split()
         # print("NEW ->")
         # print(new)
 
