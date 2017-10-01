@@ -23,6 +23,8 @@ postings = pickle.load(open('postinglist.pickle', 'rb'), encoding="utf-8")
 parser = argparse.ArgumentParser()
 parser.add_argument("-a", "--all", help="Display all results, regardless of Levenshtein distance.",
                     action="store_true")
+parser.add_argument("-j", "--jaccard", help="Take the Jaccard distance into account.",
+                    action="store_true")
 args = parser.parse_args()
 
 
@@ -60,10 +62,11 @@ def main():
 
         if q1 not in postings:
             c1 = sorted(replace_by_lev(q1).items(), key=itemgetter(1))
-            alternatives = build_alternatives(c1, q1)
+            # print("C1 => " + str(c1))
+            alternatives = build_alternatives(c1)
             # print("alternatives => " + str(alternatives))
 
-            if args.all:
+            if args.all or args.jaccard:
                 union = set()
 
                 for word in alternatives:
@@ -108,7 +111,7 @@ def main():
                     print_tweet(tweet)
 
 
-def build_alternatives(replacements, base_term):
+def build_alternatives(replacements):
     """
     Builds a list containing alternative search terms.
     :param replacements: 
@@ -136,12 +139,12 @@ def build_alternatives(replacements, base_term):
                     alternatives.append(term[0])
                     prev_lev = lev
 
-    if not alternatives:
-        return replace_vowels(base_term)
-    elif not args.all:
-        return alternatives[-1]
-    else:
+    if args.all or args.jaccard:
+        # print('!')
         return alternatives
+    else:
+        # print('?')
+        return alternatives[-1]
 
 
 def replace_vowels(word):
@@ -170,7 +173,7 @@ def replace_by_lev(word):
     :return: 
     """
     minimum_lev = -1
-    # occurrences = 0
+    maximum_jac = 0.0
     results = {}
 
     it = iter(postings)
@@ -178,17 +181,34 @@ def replace_by_lev(word):
 
     while True:
         try:
-            lev = levenshtein(word, term)
-            postings_length = len(postings[term])
-            if lev <= minimum_lev or minimum_lev == -1:  # and (postings_length > occurrences):
-                # print("MIN => " + str(minimum_lev))
-                minimum_lev = lev
-                occurrences = postings_length
-                results.update({term: (minimum_lev, occurrences)})
-                term = next(it)
+            if args.jaccard:
+                jac = jaccard(set(ngrams(word, 3)), set(ngrams(term, 3)))
+                # print("JAC => " + str(jac))
+                if jac > maximum_jac:
+                    maximum_jac = jac
+                    # print("TERM\t" + term)
+                    # print("JAC\t" + str(jac))
+                    lev = levenshtein(word, term)
+                    postings_length = len(postings[term])
+                    if lev <= minimum_lev or minimum_lev == -1:  # and (postings_length > occurrences):
+                        minimum_lev = lev
+                        results.update({term: (minimum_lev, postings_length)})
+                    term = next(it)
+                else:
+                    term = next(it)
+
             else:
-                term = next(it)
+                lev = levenshtein(word, term)
+                postings_length = len(postings[term])
+                if lev <= minimum_lev or minimum_lev == -1:  # and (postings_length > occurrences):
+                    # print("MIN => " + str(minimum_lev))
+                    minimum_lev = lev
+                    results.update({term: (minimum_lev, postings_length)})
+                    term = next(it)
+                else:
+                    term = next(it)
         except StopIteration:
+            # print(results)
             return results
 
 
@@ -231,16 +251,14 @@ def levenshtein(w1, w2):
             subs = previous[b] + (char1 != char2)
             current.append(min(inserts, deletions, subs))
         previous = current
-
-    # print(previous[-1])
     return previous[-1]
 
 
 def jaccard(set1, set2):
     """
     Calculates Jaccard index. Also known as calculating the similarity between sets.
-    :param set1: 
-    :param set2: 
+    :param set1: trigrams in first term
+    :param set2: trigrams in second term
     :return: 
     """
     n = len(set1.intersection(set2))
@@ -272,7 +290,9 @@ def ngrams(word, n):
 
     output = []
     for i in range(len(word) - n + 1):
-        output.append(word[i:i + n])
+        # print(i)
+        # print(word[i:i + n])
+        output.append(''.join(word[i:i + n]))
     return output
 
 
