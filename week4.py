@@ -115,7 +115,6 @@ def build_alternatives(replacements):
     """
     Builds a list containing alternative search terms.
     :param replacements: 
-    :param base_term: 
     :return: 
     """
     alternatives = []
