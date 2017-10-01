@@ -20,8 +20,8 @@ def main():
     all other characters costs 1. Substitution has a cost of 1 as well, except if
     a vowel is substituted by a vowel which has a cost of 0.5. For the purpose of
     this exercise, vowels simply are characters a, e, i, o and u. Here are some
-    examples: file lev_vowel.in. The following pipe should produce output that is
-    identical to lev_vowel.out. 
+    examples: file kev.in. The following pipe should produce output that is
+    identical to ew.out. 
     :return: 
     """
 
