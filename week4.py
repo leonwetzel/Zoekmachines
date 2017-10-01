@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 """
-Week 3
+Week 4
 Search Engines / Zoekmachines
 @author Leon F.A. Wetzel
 University of Groningen / Rijksuniversiteit Groningen
@@ -10,6 +10,7 @@ l.f.a.wetzel@student.rug.nl
 """
 import sys
 import pickle
+import operator
 
 db = pickle.load(open('db.pickle', 'rb'), encoding="utf-8")
 tweets = pickle.load(open('tweets.pickle', 'rb'), encoding="utf-8")
@@ -42,21 +43,30 @@ def main():
         # retrieve terms
         [q1, q2] = line.rstrip().lower().split()
 
+        # print('1 => ' + str(q1))
+        # print('2 => ' + str(q2))
+
         if q1 not in postings:
-            replace_by_lev(q1)
+            # print('?')
+            c1 = replace_by_lev(q1)
+            print(c1)
         if q2 not in postings:
-            replace_by_lev(q2)
+            # print('!')
+            c2 = replace_by_lev(q2)
+            print(c2)
 
-        print(q1)
-        print(q2)
+            sorted_lev = sorted(c2)
 
-        # sys.stderr.write("Terms not in posting lists.\n")
+            print(str(sorted_lev))
+            # print(str(sorted_occur))
 
-        # below is the ideal situation!
+            # for term in c2:
+            #     if c2[term][0] <= 2 and
+            #     p2.add(postings[term])
+
 
         p1 = set(postings[q1])
         p2 = set(postings[q2])
-
         # set with ID's of tweets in which both terms occur
         intersection = p1 & p2
 
@@ -66,23 +76,43 @@ def main():
             if (q1, tweet) in db and (q2, tweet) in db:
                 if bigram(db[(q1, tweet)], db[(q2, tweet)]):
                     print_tweet(tweet)
-            else:
-                sys.stderr.write("No results found.\n")
 
 
 def replace_by_lev(word):
     """
     Replaces a 'wrong' word with another word from the postinglist.
     The postingslist contains every indexed word from the tweets database.
+    Replacement is also based on the length of the array containing tweet ID's.
+    
+    dict(term: tup(mininum_lev, occurrences))
+    
     :param word: 
     :return: 
     """
-    minimum = 0
-    for term in postings:
-        if levenshtein(word, term) > minimum:
-            minimum = levenshtein(word, term)
-            word = term
-    return word
+    minimum_lev = -1
+    occurrences = 0
+    results = {}
+
+    it = iter(postings)
+    term = next(it)
+
+    while True:
+        try:
+            lev = levenshtein(word, term)
+            postings_length = len(postings[term])
+            if (lev < minimum_lev or minimum_lev == -1) and (postings_length > occurrences):
+                # print("MIN => " + str(minimum_lev))
+                minimum_lev = lev
+                occurrences = postings_length
+                results.update({term: (minimum_lev, occurrences)})
+                # print("W => " + replacement)
+                term = next(it)
+            else:
+                term = next(it)
+        except StopIteration:
+            return results
+
+    # return results
 
 
 def levenshtein(w1, w2):
@@ -125,12 +155,13 @@ def levenshtein(w1, w2):
             current.append(min(inserts, deletions, subs))
         previous = current
 
+    # print(previous[-1])
     return previous[-1]
 
 
 def jaccard(set1, set2):
     """
-    Calculates Jaccard index.
+    Calculates Jaccard index. Also known as calculating the similarity between sets.
     :param set1: 
     :param set2: 
     :return: 
@@ -145,22 +176,26 @@ def print_tweet(tweet_id):
     :param tweet_id: ID of tweet
     """
     try:
-        print(tweets[tweet_id][2])
+        print(tweets[tweet_id][2] + '\n')
     except TypeError:
-        sys.stderr.write("Not a valid tweet ID.")
+        sys.stderr.write("Not a valid tweet ID.\n")
 
 
-def ngrams(input, n):
+def ngrams(word, n):
     """
-    Generates n-grams, based on input string.
-    :param input: 
+    Generates n-grams, based on a given word.
+    :param word: 
     :param n: 
     :return: n-grams
     """
-    input = list(input)
+    word = list(word)
+    # insert extra tokens
+    word.insert(0, '$')
+    word.append('$')
+
     output = []
-    for i in range(len(input) - n + 1):
-        output.append(input[i:i + n])
+    for i in range(len(word) - n + 1):
+        output.append(word[i:i + n])
     return output
 
 
