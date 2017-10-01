@@ -10,11 +10,20 @@ l.f.a.wetzel@student.rug.nl
 """
 import sys
 import pickle
-import operator
+import argparse
+from operator import itemgetter
+
+vowels = ['a', 'i', 'u', 'e', 'o']
 
 db = pickle.load(open('db.pickle', 'rb'), encoding="utf-8")
 tweets = pickle.load(open('tweets.pickle', 'rb'), encoding="utf-8")
 postings = pickle.load(open('postinglist.pickle', 'rb'), encoding="utf-8")
+
+# one can give argument -a to see all results, regardless of the minimal Levenshtein distance
+parser = argparse.ArgumentParser()
+parser.add_argument("-a", "--all", help="Display all results, regardless of Levenshtein distance.",
+                    action="store_true")
+args = parser.parse_args()
 
 
 def main():
@@ -36,53 +45,124 @@ def main():
         
     STRUCTURE FOR postinglist.pickle
         dict(term : [tweetID's])
+        
+    NOTICE: this program also contains code for using this program with two terms!
     
     :return: 
     """
+
     for line in sys.stdin:
-        # retrieve terms
-        [q1, q2] = line.rstrip().lower().split()
+        # retrieve term(s)
+        [q1] = line.rstrip().lower().split()
 
         # print('1 => ' + str(q1))
         # print('2 => ' + str(q2))
 
         if q1 not in postings:
-            # print('?')
-            c1 = replace_by_lev(q1)
-            print(c1)
-        if q2 not in postings:
-            # print('!')
-            c2 = replace_by_lev(q2)
-            print(c2)
+            c1 = sorted(replace_by_lev(q1).items(), key=itemgetter(1))
+            alternatives = build_alternatives(c1, q1)
+            # print("alternatives => " + str(alternatives))
 
-            sorted_lev = sorted(c2)
+            if args.all:
+                union = set()
 
-            print(str(sorted_lev))
-            # print(str(sorted_occur))
+                for word in alternatives:
+                    union = union | set(postings[word])
 
-            # for term in c2:
-            #     if c2[term][0] <= 2 and
-            #     p2.add(postings[term])
+                for tweet in union:
+                    for word in alternatives:
+                        if(word, tweet) in db:
+                            print_tweet(tweet)
+            else:
+                p1 = set(postings[alternatives])
+                for tweet in p1:
+                    if(alternatives, tweet) in db:
+                        print_tweet(tweet)
+        else:
 
+            # print(c1)
+            # if q2 not in postings:
+            #     # print('!')
+            #     c2 = replace_by_lev(q2)
+            #     print(c2)
+            #
+            #     sorted_lev = sorted(c2)
+            #
+            #     print(str(sorted_lev))
+                # print(str(sorted_occur))
 
-        p1 = set(postings[q1])
-        p2 = set(postings[q2])
-        # set with ID's of tweets in which both terms occur
-        intersection = p1 & p2
+                # for term in c2:
+                #     if c2[term][0] <= 2 and
+                #     p2.add(postings[term])
 
-        # print(intersection)
+            p1 = set(postings[q1])
+            # p2 = set(postings[q2])
+            # # set with ID's of tweets in which both terms occur
+            # intersection = p1 & p2
 
-        for tweet in intersection:
-            if (q1, tweet) in db and (q2, tweet) in db:
-                if bigram(db[(q1, tweet)], db[(q2, tweet)]):
+            # print(intersection)
+
+            for tweet in p1:  # formerly 'intersection'
+                if (q1, tweet) in db:  # and (q2, tweet) in db:
+                    # if bigram(db[(q1, tweet)], db[(q2, tweet)]):
                     print_tweet(tweet)
+
+
+def build_alternatives(replacements, base_term):
+    """
+    Builds a list containing alternative search terms.
+    :param replacements: 
+    :param base_term: 
+    :return: 
+    """
+    alternatives = []
+    highest = 0
+    prev_lev = 0
+
+    for term in replacements:
+        # print("\nterm => " + str(term))
+        lev = term[1][0]
+        hits = term[1][1]
+
+        if lev < 2 or lev == prev_lev:
+            if args.all:
+                # print("\nterm => " + str(term))
+                alternatives.append(term[0])
+                prev_lev = lev
+            else:
+                if hits > highest:
+                    highest = hits
+                    # print("\nterm => " + str(term))
+                    alternatives.append(term[0])
+                    prev_lev = lev
+
+    if not alternatives:
+        return replace_vowels(base_term)
+    elif not args.all:
+        return alternatives[-1]
+    else:
+        return alternatives
+
+
+def replace_vowels(word):
+    """
+    Generates a list of variant words of a given word.
+    The variants contain different vowels.
+    :param word: 
+    :return: list of variant words
+    """
+    variants = []
+    for c in word:
+        if c in vowels:
+            for vowel in vowels:
+                variants.append(word.replace(c, vowel))
+    return variants
 
 
 def replace_by_lev(word):
     """
     Replaces a 'wrong' word with another word from the postinglist.
     The postingslist contains every indexed word from the tweets database.
-    Replacement is also based on the length of the array containing tweet ID's.
     
     dict(term: tup(mininum_lev, occurrences))
     
@@ -90,7 +170,7 @@ def replace_by_lev(word):
     :return: 
     """
     minimum_lev = -1
-    occurrences = 0
+    # occurrences = 0
     results = {}
 
     it = iter(postings)
@@ -100,19 +180,16 @@ def replace_by_lev(word):
         try:
             lev = levenshtein(word, term)
             postings_length = len(postings[term])
-            if (lev < minimum_lev or minimum_lev == -1) and (postings_length > occurrences):
+            if lev <= minimum_lev or minimum_lev == -1:  # and (postings_length > occurrences):
                 # print("MIN => " + str(minimum_lev))
                 minimum_lev = lev
                 occurrences = postings_length
                 results.update({term: (minimum_lev, occurrences)})
-                # print("W => " + replacement)
                 term = next(it)
             else:
                 term = next(it)
         except StopIteration:
             return results
-
-    # return results
 
 
 def levenshtein(w1, w2):
