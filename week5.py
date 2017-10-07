@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 """
-Week 4
+Week 5
 Search Engines / Zoekmachines
 @author Leon F.A. Wetzel
 University of Groningen / Rijksuniversiteit Groningen
@@ -19,23 +19,19 @@ db = pickle.load(open('db.pickle', 'rb'), encoding="utf-8")
 tweets = pickle.load(open('tweets.pickle', 'rb'), encoding="utf-8")
 postings = pickle.load(open('postinglist.pickle', 'rb'), encoding="utf-8")
 
-# one can give argument -a to see all results, regardless of the minimal Levenshtein distance
-parser = argparse.ArgumentParser()
-parser.add_argument("-a", "--all", help="Display all results, regardless of Levenshtein distance.",
-                    action="store_true")
-parser.add_argument("-j", "--jaccard", help="Take the Jaccard distance into account.",
-                    action="store_true")
-args = parser.parse_args()
-
 
 def main():
     """
-    Twitter Search with spell correction. On the basis of programming exercise 4 of week 1.
-    Adapt the Twitter query system as follows. If there are no hits for the given query term,
-    adapt the query so that it uses a query term that is very close to the original query term
-    (e.g, a query term which does have hits and which is closest in terms of Levenshtein distance).
-    NB. Use the standard version of Levenshtein distance for this exercise (without the alternative
-    score for vowels).
+    Programming exercise: take the Twitter-search-engine from the last few weeks
+    as a starting point. Implement a variant which takes two search terms and then
+    returns all tweets which match at least one of the search terms. Add the tf-idf
+     score of each document. Order the returned documents by tf-idf score.
+
+    creation of data-structure:
+    you need to maintain, for each term, in how many documents that term occurs.
+    It is ok to use the length of the posting list for this purpose.
+    you also need to maintain the overall number of tweets
+    you need to maintain how often a word occurs in a tweet 
     
     STRUCTURE FOR db.pickle
         DB structure: term | tweetID | ordered position list for term in tweet
@@ -55,59 +51,67 @@ def main():
 
     for line in sys.stdin:
         # retrieve term(s)
-        [q1] = line.rstrip().lower().split()
+        [q1, q2] = line.rstrip().lower().split()
 
         # print('1 => ' + str(q1))
         # print('2 => ' + str(q2))
 
+        union = set()
+
         if q1 not in postings:
             c1 = sorted(replace_by_lev(q1).items(), key=itemgetter(1))
             # print("C1 => " + str(c1))
-            alternatives = build_alternatives(c1)
+            a1 = build_alternatives(c1)
             # print("alternatives => " + str(alternatives))
-
-            if args.all or args.jaccard:
-                union = set()
-
-                for word in alternatives:
-                    union = union | set(postings[word])
-
-                for tweet in union:
-                    for word in alternatives:
-                        if(word, tweet) in db:
-                            print_tweet(tweet)
-            else:
-                p1 = set(postings[alternatives])
-                for tweet in p1:
-                    if(alternatives, tweet) in db:
-                        print_tweet(tweet)
+            for word in a1:
+                union = union | set(postings[word])
         else:
+            union = union | set(postings[q1])
 
-            # print(c1)
-            # if q2 not in postings:
-            #     # print('!')
-            #     c2 = replace_by_lev(q2)
-            #     print(c2)
-            #
-            #     sorted_lev = sorted(c2)
-            #
-            #     print(str(sorted_lev))
-                # print(str(sorted_occur))
+        if q2 not in postings:
+            c2 = sorted(replace_by_lev(q2).items(), key=itemgetter(1))
+            a2 = build_alternatives(c2)
+            for word in a2:
+                union = union | set(postings[word])
+        else:
+            union = union | set(postings[q2])
 
-                # for term in c2:
-                #     if c2[term][0] <= 2 and
-                #     p2.add(postings[term])
+        # for tweet in union:
+        #     for word in a1:
+        #         if (word, tweet) in db:
+        #             print_tweet(tweet)
+        #                 # else:
+        #                 #     p1 = set(postings[alternatives])
+        #                 #     for tweet in p1:
+        #                 #         if (alternatives, tweet) in db:
+        #                 #             print_tweet(tweet)
 
-            p1 = set(postings[q1])
-            # p2 = set(postings[q2])
-            # # set with ID's of tweets in which both terms occur
-            # intersection = p1 & p2
 
-            # print(intersection)
+        # print(c1)
+        # if q2 not in postings:
+        #     # print('!')
+        #     c2 = replace_by_lev(q2)
+        #     print(c2)
+        #
+        #     sorted_lev = sorted(c2)
+        #
+        #     print(str(sorted_lev))
+        # print(str(sorted_occur))
 
-            for tweet in p1:  # formerly 'intersection'
-                if (q1, tweet) in db:  # and (q2, tweet) in db:
-                    # if bigram(db[(q1, tweet)], db[(q2, tweet)]):
+        # for term in c2:
+        #     if c2[term][0] <= 2 and
+        #     p2.add(postings[term])
+
+        p1 = set(postings[q1])
+        p2 = set(postings[q2])
+        # # set with ID's of tweets in which both terms occur
+        intersection = p1 & p2
+
+        # print(intersection)
+
+        for tweet in intersection:
+            if (q1, tweet) in db and (q2, tweet) in db:
+                if bigram(db[(q1, tweet)], db[(q2, tweet)]):
                     print_tweet(tweet)
 
 
@@ -127,23 +131,13 @@ def build_alternatives(replacements):
         hits = term[1][1]
 
         if lev < 2 or lev == prev_lev:
-            if args.all:
+            if hits > highest:
+                highest = hits
                 # print("\nterm => " + str(term))
                 alternatives.append(term[0])
                 prev_lev = lev
-            else:
-                if hits > highest:
-                    highest = hits
-                    # print("\nterm => " + str(term))
-                    alternatives.append(term[0])
-                    prev_lev = lev
 
-    if args.all or args.jaccard:
-        # print('!')
-        return alternatives
-    else:
-        # print('?')
-        return alternatives[-1]
+    return alternatives
 
 
 def replace_vowels(word):
@@ -172,7 +166,6 @@ def replace_by_lev(word):
     :return: 
     """
     minimum_lev = -1
-    maximum_jac = 0.0
     results = {}
 
     it = iter(postings)
@@ -180,32 +173,15 @@ def replace_by_lev(word):
 
     while True:
         try:
-            if args.jaccard:
-                jac = jaccard(set(ngrams(word, 3)), set(ngrams(term, 3)))
-                # print("JAC => " + str(jac))
-                if jac > maximum_jac:
-                    maximum_jac = jac
-                    # print("TERM\t" + term)
-                    # print("JAC\t" + str(jac))
-                    lev = levenshtein(word, term)
-                    postings_length = len(postings[term])
-                    if lev <= minimum_lev or minimum_lev == -1:  # and (postings_length > occurrences):
-                        minimum_lev = lev
-                        results.update({term: (minimum_lev, postings_length)})
-                    term = next(it)
-                else:
-                    term = next(it)
-
+            lev = levenshtein(word, term)
+            postings_length = len(postings[term])
+            if lev <= minimum_lev or minimum_lev == -1:  # and (postings_length > occurrences):
+                # print("MIN => " + str(minimum_lev))
+                minimum_lev = lev
+                results.update({term: (minimum_lev, postings_length)})
+                term = next(it)
             else:
-                lev = levenshtein(word, term)
-                postings_length = len(postings[term])
-                if lev <= minimum_lev or minimum_lev == -1:  # and (postings_length > occurrences):
-                    # print("MIN => " + str(minimum_lev))
-                    minimum_lev = lev
-                    results.update({term: (minimum_lev, postings_length)})
-                    term = next(it)
-                else:
-                    term = next(it)
+                term = next(it)
         except StopIteration:
             # print(results)
             return results
@@ -251,17 +227,6 @@ def levenshtein(w1, w2):
             current.append(min(inserts, deletions, subs))
         previous = current
     return previous[-1]
-
-
-def jaccard(set1, set2):
-    """
-    Calculates Jaccard index. Also known as calculating the similarity between sets.
-    :param set1: trigrams in first term
-    :param set2: trigrams in second term
-    :return: 
-    """
-    n = len(set1.intersection(set2))
-    return n / float(len(set1) + len(set2) - n)
 
 
 def print_tweet(tweet_id):
