@@ -71,6 +71,7 @@ def main():
 
         p1 = set(postings[w1])
         p2 = set(postings[w2])
+        # intersection contains ID's of tweets in which w1 or w2 or both w1 and w2 occur.
         intersection = p1 | p2
 
         results = {}
@@ -79,7 +80,6 @@ def main():
                 # if bigram(db[(w1, tweet)], db[(w2, tweet)]):
                 score = normalize_vector(tf_idf(w1, tweet_id), tf_idf(w2, tweet_id))
                 results.update({tweet_id: score})
-                # print_tweet(tweet_id)
             elif (w1, tweet_id) in db:
                 score = normalize_vector(tf_idf(w1, tweet_id))
                 results.update({tweet_id: score})
@@ -95,9 +95,11 @@ def main():
 def tf_idf(term, document):
     """
     Calculates TF-IDF score for a term in a document.
+    TF-IDF = TF * IDF
+    - term frequency * inverted document frequency
     :return: 
     """
-    return tf(term, document) * (TWEET_AMOUNT / df(term))
+    return tf(term, document) * math.log(TWEET_AMOUNT / df(term))
 
 
 def tf(term, document):
