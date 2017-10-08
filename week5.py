@@ -10,14 +10,16 @@ l.f.a.wetzel@student.rug.nl
 """
 import sys
 import pickle
-import argparse
 from operator import itemgetter
+import math
 
-vowels = ['a', 'i', 'u', 'e', 'o']
+VOWELS = ['a', 'i', 'u', 'e', 'o']
 
 db = pickle.load(open('db.pickle', 'rb'), encoding="utf-8")
 tweets = pickle.load(open('tweets.pickle', 'rb'), encoding="utf-8")
 postings = pickle.load(open('postinglist.pickle', 'rb'), encoding="utf-8")
+
+TWEET_AMOUNT = len(tweets)
 
 
 def main():
@@ -25,7 +27,7 @@ def main():
     Programming exercise: take the Twitter-search-engine from the last few weeks
     as a starting point. Implement a variant which takes two search terms and then
     returns all tweets which match at least one of the search terms. Add the tf-idf
-     score of each document. Order the returned documents by tf-idf score.
+    score of each document. Order the returned documents by tf-idf score.
 
     creation of data-structure:
     you need to maintain, for each term, in how many documents that term occurs.
@@ -53,66 +55,82 @@ def main():
         # retrieve term(s)
         [q1, q2] = line.rstrip().lower().split()
 
-        # print('1 => ' + str(q1))
-        # print('2 => ' + str(q2))
-
-        union = set()
-
         if q1 not in postings:
-            c1 = sorted(replace_by_lev(q1).items(), key=itemgetter(1))
-            # print("C1 => " + str(c1))
-            a1 = build_alternatives(c1)
-            # print("alternatives => " + str(alternatives))
-            for word in a1:
-                union = union | set(postings[word])
+            w1 = sorted(replace_by_lev(q1).items(), key=itemgetter(1))
+            w1 = w1[len(w1)-1][0]
+            print("w1 => " + str(w1))
         else:
-            union = union | set(postings[q1])
+            w1 = q1
 
         if q2 not in postings:
-            c2 = sorted(replace_by_lev(q2).items(), key=itemgetter(1))
-            a2 = build_alternatives(c2)
-            for word in a2:
-                union = union | set(postings[word])
+            w2 = sorted(replace_by_lev(q2).items(), key=itemgetter(1))
+            w2 = w2[len(w2)-1][0]
+            print("w2 => " + str(w2))
         else:
-            union = union | set(postings[q2])
+            w2 = q2
 
-        # for tweet in union:
-        #     for word in a1:
-        #         if (word, tweet) in db:
-        #             print_tweet(tweet)
-        #                 # else:
-        #                 #     p1 = set(postings[alternatives])
-        #                 #     for tweet in p1:
-        #                 #         if (alternatives, tweet) in db:
-        #                 #             print_tweet(tweet)
+        p1 = set(postings[w1])
+        p2 = set(postings[w2])
+        intersection = p1 | p2
+
+        results = {}
+        for tweet_id in intersection:
+            if (w1, tweet_id) in db and (w2, tweet_id) in db:
+                # if bigram(db[(w1, tweet)], db[(w2, tweet)]):
+                score = normalize_vector(tf_idf(w1, tweet_id), tf_idf(w2, tweet_id))
+                results.update({tweet_id: score})
+                # print_tweet(tweet_id)
+            elif (w1, tweet_id) in db:
+                score = normalize_vector(tf_idf(w1, tweet_id))
+                results.update({tweet_id: score})
+            elif (w2, tweet_id) in db:
+                score = normalize_vector(tf_idf(w2, tweet_id))
+                results.update({tweet_id: score})
+
+        for identifier, score in reversed(sorted(results.items(), key=itemgetter(1))):
+            print(score)
+            print_tweet(identifier)
 
 
-        # print(c1)
-        # if q2 not in postings:
-        #     # print('!')
-        #     c2 = replace_by_lev(q2)
-        #     print(c2)
-        #
-        #     sorted_lev = sorted(c2)
-        #
-        #     print(str(sorted_lev))
-        # print(str(sorted_occur))
+def tf_idf(term, document):
+    """
+    Calculates TF-IDF score for a term in a document.
+    :return: 
+    """
+    return tf(term, document) * (TWEET_AMOUNT / df(term))
 
-        # for term in c2:
-        #     if c2[term][0] <= 2 and
-        #     p2.add(postings[term])
 
-        p1 = set(postings[q1])
-        p2 = set(postings[q2])
-        # # set with ID's of tweets in which both terms occur
-        intersection = p1 & p2
+def tf(term, document):
+    """
+    Calculates term frequency of term in document.
+    :param term: a word
+    :param document: a tweet
+    :return: term frequency
+    """
+    return len(db[(term, document)])
 
-        # print(intersection)
 
-        for tweet in intersection:
-            if (q1, tweet) in db and (q2, tweet) in db:
-                if bigram(db[(q1, tweet)], db[(q2, tweet)]):
-                    print_tweet(tweet)
+def df(term):
+    """
+    Calculates document frequency of term.
+    (in how many documents does term occur?)
+    :param term: 
+    :return: 
+    """
+    return len(postings[term])
+
+
+def normalize_vector(score1, score2=None):
+    """
+    Normalizes vector by dividing each cell in the vector by its length.
+    :param score1: first element
+    :param score2: second element (optional)
+    :return: 
+    """
+    if score2 is None:
+        return score1 / math.sqrt(score1 ** 2)
+    else:
+        return (score1 + score2) / (math.sqrt(score1**2 + score2**2))
 
 
 def build_alternatives(replacements):
@@ -149,8 +167,8 @@ def replace_vowels(word):
     """
     variants = []
     for c in word:
-        if c in vowels:
-            for vowel in vowels:
+        if c in VOWELS:
+            for vowel in VOWELS:
                 variants.append(word.replace(c, vowel))
     return variants
 
@@ -175,15 +193,18 @@ def replace_by_lev(word):
         try:
             lev = levenshtein(word, term)
             postings_length = len(postings[term])
-            if lev <= minimum_lev or minimum_lev == -1:  # and (postings_length > occurrences):
+            if lev <= 1:  # and (postings_length >= hits):
                 # print("MIN => " + str(minimum_lev))
                 minimum_lev = lev
                 results.update({term: (minimum_lev, postings_length)})
                 term = next(it)
             else:
+                if lev < minimum_lev:
+                    minimum_lev = lev
+                    results.update({term: (minimum_lev, postings_length)})
                 term = next(it)
         except StopIteration:
-            # print(results)
+            print(results)
             return results
 
 
