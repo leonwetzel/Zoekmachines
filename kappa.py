@@ -7,7 +7,6 @@ Search Engines / Zoekmachines
 University of Groningen / Rijksuniversiteit Groningen
 l.f.a.wetzel@student.rug.nl
 """
-
 import sys
 from collections import Counter
 
@@ -41,7 +40,7 @@ def main():
     a = counter / total
     e = calculate_chance_agreement(left, right, total)
 
-    print(str(kappa(a, e)))
+    print("{}".format(kappa(a, e)))
 
 
 def calculate_chance_agreement(left, right, total):
@@ -50,7 +49,7 @@ def calculate_chance_agreement(left, right, total):
     :param: Values from left row
     :param: Values from right row
     :param: Total amount of cases
-    :return: rounded chance agreement
+    :return: Rounded chance agreement
     """
     left_counts = dict(Counter(left))
     right_counts = dict(Counter(right))
@@ -66,7 +65,7 @@ def kappa(a, e):
     """
     Calculates kappa value.
     kappa = fraction of agreement cases / fraction of chance agreement cases
-    :return: rounded kappa value
+    :return: Rounded kappa value
     """
     return round(float((a - e) / (1 - e)), 4)
 
@@ -74,7 +73,7 @@ def kappa(a, e):
 def calculate_chance(judgements, cases):
     """
     Divide the amount of judgements by the total amount of cases
-    :return: chance
+    :return: Chance
     """
     return float(judgements / cases)
 
