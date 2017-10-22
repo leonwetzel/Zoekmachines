@@ -8,7 +8,6 @@ University of Groningen / Rijksuniversiteit Groningen
 l.f.a.wetzel@student.rug.nl
 """
 import sys
-import numpy
 
 
 def main():
@@ -36,7 +35,6 @@ def main():
 def pagerank(standard, matrix):
     """
     Calculates pagerank, based on a standard vector and a given matrix.
-    
     :param standard: 
     :param matrix: 
     :return: 
@@ -45,6 +43,9 @@ def pagerank(standard, matrix):
     mat = []
 
     while new != standard:
+        # keep calculating until standard vector does not change anymore.
+        # if vector does not change anymore, the left eigenvector of the
+        # matrix has been found!
         if new:
             standard = new.copy()
             new.clear()
@@ -52,13 +53,12 @@ def pagerank(standard, matrix):
 
         for i, row in enumerate(matrix):
             rij = []
-            for j, item in enumerate(row):
-                rij.append(item * standard[i])
+            for j, value in enumerate(row):
+                rij.append(value * standard[i])
             mat.append(rij)
 
         for i, row in enumerate(mat):
             new.append(round(sum([item[i] for item in mat]), 4))
-
     return new
 
 
