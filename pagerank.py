@@ -35,14 +35,17 @@ def main():
 def pagerank(standard, matrix):
     """
     Calculates pagerank, based on a standard vector and a given matrix.
+    This functions contains a safety mechanism in case calculations
+    become too complex or get stuck.
     :param standard: 
     :param matrix: 
     :return: 
     """
     new = []
     mat = []
+    iterations = 0
 
-    while new != standard:
+    while new != standard and iterations < 42:
         # keep calculating until standard vector does not change anymore.
         # if vector does not change anymore, the left eigenvector of the
         # matrix has been found!
@@ -59,6 +62,8 @@ def pagerank(standard, matrix):
 
         for i, row in enumerate(mat):
             new.append(round(sum([item[i] for item in mat]), 4))
+        iterations += 1
+
     return new
 
 

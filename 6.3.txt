@@ -1,0 +1,6 @@
+What is the resulting probability matrix in this case (without teleports)?
+- See text_input_6.3.txt
+
+Does this adaptation leads to an increase in PageRank of the original site?
+- 0.1666	0.1666	0.1666	0.333	0.0417	0.0417	0.0417	0.0417
+- It does not lead to an increase in PageRank!
